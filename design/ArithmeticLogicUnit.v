@@ -13,12 +13,6 @@ module ArithmeticLogicUnit(
     reg [7:0] A_s, B_s;
     reg [16:0] temp3;
     
-initial begin
-    FlagsOut = 4'h1;
-    A_s = A[7:0];
-    B_s = B[7:0];
-end
-
 always @(posedge Clock) begin
 // Z C N O -> [3, 2, 1, 0]
 //######### 8 BIT OPERATIONS ########
@@ -188,7 +182,8 @@ always @(posedge Clock) begin
 end
 
 always @(*) begin
-
+    A_s = A [7:0];
+    B_s = B [7:0]; 
 // Z C N O -> [3, 2, 1, 0]
 //######### 8 BIT OPERATIONS ########
 //----------------------------------
@@ -217,8 +212,7 @@ always @(*) begin
         5'b00110: begin
                      ALUOut = A_s + (~B_s + 8'b00000001); // Subtract B from A
                      
-                  end
-       
+                  end 
         5'b00111: begin
                      ALUOut = A_s & B_s; // Perform bitwise AND operation
                      
