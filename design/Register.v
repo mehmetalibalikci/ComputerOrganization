@@ -8,6 +8,10 @@ module Register(
   output reg [15:0] Q
 );
 
+initial begin
+    Q = 16'h0000;
+end
+
     always @(*) begin
       if (E) begin
         case (FunSel)

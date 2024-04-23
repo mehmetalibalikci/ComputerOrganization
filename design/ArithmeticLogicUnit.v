@@ -8,15 +8,13 @@ module ArithmeticLogicUnit(
     output reg [15:0] ALUOut,
     output reg [3:0] FlagsOut
 );
-    reg temp;
     reg [8:0] temp2;
     reg [7:0] A_s, B_s;
     reg [16:0] temp3;
     
 initial begin
     FlagsOut = 4'h1;
-    A_s = A[7:0];
-    B_s = B[7:0];
+
 end
 
 always @(posedge Clock) begin
@@ -129,10 +127,10 @@ always @(posedge Clock) begin
 
              end
     5'b10101: begin
-                 FlagsOut[0] = ((A[15] & B[15]) | (B[15] & FlagsOut[2]) | (A[15] & FlagsOut[2])); // Overflow flag
                  FlagsOut[3] = (ALUOut == 0); // Zero flag
-                 FlagsOut[1] = ALUOut[15]; // Negative flag
                  FlagsOut[2] = temp3[16]; // Carry flag 
+                 FlagsOut[1] = ALUOut[15]; // Negative flag
+                 FlagsOut[0] = ((A[15] & B[15]) | (B[15] & FlagsOut[2]) | (A[15] & FlagsOut[2])); // Overflow flag
              end
     5'b10110: begin
                  FlagsOut[0] = (A[15] & ~B[15] & ALUOut[15]) | (~A[15] & B[15] & ~ALUOut[15]); // Overflow flag
@@ -188,7 +186,8 @@ always @(posedge Clock) begin
 end
 
 always @(*) begin
-
+    A_s = A[7:0];
+    B_s = B[7:0];
 // Z C N O -> [3, 2, 1, 0]
 //######### 8 BIT OPERATIONS ########
 //----------------------------------

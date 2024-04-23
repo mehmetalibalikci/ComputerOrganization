@@ -16,7 +16,6 @@ module AddressRegisterFile(
     Register PC(.I(I), .FunSel(FunSel), .E(~RegSel[2]), .Clock(Clock), .Q(PC_reg));
     Register AR(.I(I), .FunSel(FunSel), .E(~RegSel[1]), .Clock(Clock), .Q(AR_reg));
     Register SP(.I(I), .FunSel(FunSel), .E(~RegSel[0]), .Clock(Clock), .Q(SP_reg));
- 
   
     always @(*) begin
         case (OutCSel)
