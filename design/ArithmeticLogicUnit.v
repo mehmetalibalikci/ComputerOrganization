@@ -11,7 +11,9 @@ module ArithmeticLogicUnit(
     reg [8:0] temp2;
     reg [7:0] A_s, B_s;
     reg [16:0] temp3;
-
+    initial begin
+        FlagsOut = 4'h1;
+    end
     always @(posedge Clock) begin
     // Z C N O -> [3, 2, 1, 0]
     //######### 8 BIT OPERATIONS ########
