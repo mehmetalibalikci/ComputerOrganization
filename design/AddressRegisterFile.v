@@ -29,7 +29,7 @@ module AddressRegisterFile(
         case (OutDSel)
           2'b00: OutD <= PC_reg;
           2'b01: OutD <= PC_reg;
-          2'b10: OutC <= AR_reg;
+          2'b10: OutD <= AR_reg;
           2'b11: OutD <= SP_reg;
           default: OutD <= 8'b0;
         endcase

@@ -25,14 +25,13 @@ endmodule
     input wire [15:0] I1,
     input wire Clock,
     input wire selector,
-    
-    output reg [7:0] MUX_output
+    output reg [15:0] MUX_output
 );
     always @(*)begin
-    case(selector)
-    1'b0: MUX_output <= I1[7:0];
-    1'b1: MUX_output <= I1[15:8]; 
-    endcase
+        case(selector)
+            1'b0: MUX_output <= I1[7:0];
+            1'b1: MUX_output <= I1[15:8]; 
+        endcase
     end
 endmodule
 
@@ -69,7 +68,7 @@ module ArithmeticLogicUnitSystem(
     
     wire [15:0] OutA, OutB;
     wire [15:0] IROut;
-    wire [15:0] MuxAOut, MuxBOut, MuxCOut, ALUOut, OutC, Address;
+    wire [15:0] MuxAOut, MuxBOut, ALUOut, OutC, Address, MuxCOut;
     wire [7:0] MemOut;
     wire [3:0] ALUOutFlag;
 

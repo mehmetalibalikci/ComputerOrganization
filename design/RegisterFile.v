@@ -15,6 +15,11 @@ module RegisterFile(
     wire [15:0] q_R1, q_R2, q_R3, q_R4;
     wire [15:0] q_S1, q_S2, q_S3, q_S4;
 
+initial begin
+    OutA = 16'h0000;
+    OutB = 16'h0000;
+end
+
     always @(*) begin
           
     case(OutASel)
