@@ -15,7 +15,7 @@ module SequenceCounter(
         end   
 endmodule
 
-module Decoder2to8(
+module Decoder3to8(
     input wire Enable,
     input wire [2:0] TimeDecoderInput,
     output reg [7:0] TimeDecoderOutput
@@ -69,9 +69,11 @@ module CPUSystem(
                               .MuxBSel(MuxBSel), .MuxCSel(MuxCSel), .Address(Address), .MuxAOut(MuxAOut), .OutA(OutA), .OutB(OutB), .OutC(OutC), .ALUOutFlag(ALUOutFlag));
                               
    SequenceCounter SC(Clock, SCReset, IncrementSC, TimeDecoderInput);
-   Decoder2to8 TimeDecoder(1'b1,TimeDecoderInput, T);
+   Decoder3to8 TimeDecoder(1'b1,TimeDecoderInput, T);
 
- 
+    initial begin
+        _ALUSystem.RF.R1.Q=16'h000a;
+    end
     always @(*) begin
         if (Reset) begin
             SCReset = 1;
@@ -113,6 +115,9 @@ module CPUSystem(
                     S = IROut[9]; // S'yi al.
                     case (OpCode)
                         6'b000000: begin // BRA PC <- PC + VALUE
+                            _ALUSystem.ARF.AR.Q=16'hx;
+                            _ALUSystem.ARF.SP.Q=16'hx;
+                            _ALUSystem.ALU.FlagsOut=4'bxxxx;       
                             MuxASel = 2'b11;
                             //$display("RSel: %h", RSel);
                             case (RSel)
@@ -144,6 +149,8 @@ module CPUSystem(
                             RF_FunSel = 3'b010; // Q = I    // S1 is loading.                            
                         end
                         6'b000001: begin // BNE IF Z=0 THEN PC <- PC + VALUE 
+                            _ALUSystem.ARF.AR.Q=16'hx;
+                            _ALUSystem.ARF.SP.Q=16'hx;
                             if(_ALUSystem.ALUOutFlag[3] == 0)begin
                                 MuxASel = 2'b11;
                                 case (RSel)
@@ -178,6 +185,8 @@ module CPUSystem(
                             end
                         end
                         6'b000010: begin // BEQ IF Z=1 THEN PC <- PC + VALUE
+                            _ALUSystem.ARF.AR.Q=16'hx;
+                            _ALUSystem.ARF.SP.Q=16'hx;
                             if(_ALUSystem.ALUOutFlag[3] == 1)begin
                                 MuxASel = 2'b11;
                                 case (RSel)
@@ -212,6 +221,8 @@ module CPUSystem(
                             end
                         end
                         6'b000011: begin // POP SP <- SP + 1, Rx <- M[SP]
+                            _ALUSystem.ARF.AR.Q=16'hx;
+                            _ALUSystem.ALU.FlagsOut=4'bxxxx;  
                             ARF_RegSel = 3'b110; // SP registerý enable et
                             ARF_FunSel = 3'b001; // SP registerý 1 artýr
                             
@@ -236,6 +247,8 @@ module CPUSystem(
                             endcase
                         end
                         6'b000100: begin // PSH M[SP] <- Rx, SP <- SP - 1
+                            _ALUSystem.ARF.AR.Q=16'hx;
+                            _ALUSystem.ALU.FlagsOut=4'bxxxx;   
                             ARF_RegSel = 3'b110; // SP registerý enable et
                             ARF_FunSel = 3'b00;  // SP registerý 1 azalt   // 1 clock cycle sürecek.
 
@@ -1700,6 +1713,8 @@ module CPUSystem(
                 32: begin // EXECUTE T = 5
                         case (OpCode)
                             6'b001100: begin // AND DstReg <- SReg1 AND SReg2
+                                RF_ScrSel = 4'b1011;
+                                RF_FunSel = 3'b011;
                                 SCReset = 1;
                             end
                             6'b001101: begin // ORR DstReg <- SReg1 OR SReg2
