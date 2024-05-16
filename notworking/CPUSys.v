@@ -1150,16 +1150,16 @@ module CPUSystem(
                                 3'b001: ARF_OutCSel = 2'b01;    // PC
                                 3'b010: ARF_OutCSel = 2'b10;    // SP
                                 3'b011: ARF_OutCSel = 2'b11;    // AR
-                                3'b100: RF_OutASel = 3'b000;    // R1
-                                3'b101: RF_OutASel = 3'b001;    // R2
-                                3'b110: RF_OutASel = 3'b010;    // R3
-                                3'b111: RF_OutASel = 3'b011;    // R4
+                                3'b100: RF_OutBSel = 3'b000;    // R1
+                                3'b101: RF_OutBSel = 3'b001;    // R2
+                                3'b110: RF_OutBSel = 3'b010;    // R3
+                                3'b111: RF_OutBSel = 3'b011;    // R4
                             endcase
                             if(SReg2[2] == 0)
                             begin
                                 MuxASel = 2'b01;        // OutC is selected
-                                RF_ScrSel = 4'b1011;    // S2
-                                RF_OutBSel = 3'b101;       // S2
+                                RF_ScrSel = 4'b1011;    
+                                RF_OutBSel = 3'b101;      
                                 RF_FunSel = 3'b010;     // Q = I LOAD
                             end
                             IncrementSC = 1'b1;
@@ -1494,16 +1494,15 @@ module CPUSystem(
                                 3'b110: RF_RegSel = 4'b1101;   // R3
                                 3'b111: RF_RegSel = 4'b1110;   // R4
                             endcase
-
-                            ALU_FunSel = 5'b10100;          // AluOut = A + B
-
                             if(DstReg[2] == 0)
                             begin
+                                ALU_FunSel = 5'b10100;          // AluOut = A + B
                                 MuxBSel = 2'b00;            // OutC is selected
                                 ARF_FunSel = 3'b010;
                             end
                             if(DstReg[2] == 1)
                             begin
+                                ALU_FunSel = 5'b10100;          // AluOut = A + B
                                 MuxASel = 2'b00;            // OutC is selected
                                 RF_FunSel = 3'b010;
                             end
