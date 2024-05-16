@@ -9,7 +9,7 @@ module Register(
 );
 
     initial begin
-        Q = 16'h0000;
+          Q = 16'h0000;
     end
     always @(posedge Clock) begin
       if (E) begin
