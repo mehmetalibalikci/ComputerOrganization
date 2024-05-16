@@ -80,10 +80,13 @@ module CPUSystem(
         if (Reset) begin
             SCReset = 0;
             IncrementSC = 1; // Sequence counter'ý 1 artýr
-            //$display("T: %d", T);
+            _ALUSystem.ARF.AR.Q=16'hx;
+            _ALUSystem.ARF.SP.Q=16'hx;
+            _ALUSystem.ALU.FlagsOut=4'bxxxx;
             case(T)
                 1: begin  //IR'nin ilk 8 biti yükleniyor.       // T = 0
-                    //$display("T[0]");
+                    RF_RegSel = 4'b1111; 
+                    RF_ScrSel = 4'b1111;
                     IR_Write = 1; // Insruction register'ý enable ediyorum.
                     IR_LH = 1'b0; // ilk 8 biti yükle
                     Mem_WR = 1'b0; // Memory'nin read modunu aç
@@ -235,12 +238,9 @@ module CPUSystem(
                             endcase
                         end
                         6'b000100: begin // PSH M[SP] <- Rx, SP <- SP - 1
-                            ARF_RegSel = 3'b110; // SP registerý enable et
-                            ARF_FunSel = 3'b00;  // SP registerý 1 azalt   // 1 clock cycle sürecek.
-
                             Mem_WR = 1'b1; // Memory'nin write modunu aç
                             Mem_CS = 1'b0; // Memory'yi enable et
-                            ARF_OutDSel = 2'b11; // SP registerý memout'a gidiyor.
+                            ARF_OutDSel = 2'b11; // SP registerý address'e gidiyor.
                             ALU_FunSel = 10000; // Aluout'a A gidiyor.
                             MuxCSel = 1'b0; // AluOut[7:0] memory'e yazýlýyor.
                             case (Rsel)
@@ -602,6 +602,8 @@ module CPUSystem(
                         end
                         6'b000100: begin // PSH M[SP] <- Rx, SP <- SP - 1
                             MuxCSel = 1'b1; // AluOut[15:8] memory'e yazýlýyor.
+                            ARF_RegSel = 3'b110; // SP registerý enable et
+                            ARF_FunSel = 3'b00;  // SP registerý 1 azalt   // 1 clock cycle sürecek.
                         end
                         6'b000101: begin // INC DstReg <- SReg1 + 1
                             if (DstReg[2] == 0) begin
@@ -887,6 +889,8 @@ module CPUSystem(
                         6'b000011: begin // POP SP <- SP + 1, Rx <- M[SP]
                         end
                         6'b000100: begin // PSH M[SP] <- Rx, SP <- SP - 1
+                            ARF_RegSel = 3'b111;
+                            Mem_CS = 1'b1; // Memory'yi disable et
                             SCReset = 1;
                         end
                         6'b000111: begin // LSL DstReg <- LSL SReg1
