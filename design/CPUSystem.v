@@ -15,7 +15,7 @@ module SequenceCounter(
         end   
 endmodule
 
-module Decoder2to8(
+module Decoder3to8(
     input wire Enable,
     input wire [2:0] TimeDecoderInput,
     output reg [7:0] TimeDecoderOutput
@@ -69,9 +69,11 @@ module CPUSystem(
                               .MuxBSel(MuxBSel), .MuxCSel(MuxCSel), .Address(Address), .MuxAOut(MuxAOut), .OutA(OutA), .OutB(OutB), .OutC(OutC), .ALUOutFlag(ALUOutFlag));
                               
    SequenceCounter SC(Clock, SCReset, IncrementSC, TimeDecoderInput);
-   Decoder2to8 TimeDecoder(1'b1,TimeDecoderInput, T);
+   Decoder3to8 TimeDecoder(1'b1,TimeDecoderInput, T);
 
- 
+    initial begin
+        _ALUSystem.RF.R1.Q=16'h000a;
+    end
     always @(*) begin
         if (!Reset) begin
             SCReset = 1;
@@ -80,9 +82,6 @@ module CPUSystem(
         if (Reset) begin
             SCReset = 0;
             IncrementSC = 1; // Sequence counter'ý 1 artýr
-            _ALUSystem.ARF.AR.Q=16'hx;
-            _ALUSystem.ARF.SP.Q=16'hx;
-            _ALUSystem.ALU.FlagsOut=4'bxxxx;
             case(T)
                 1: begin  //IR'nin ilk 8 biti yükleniyor.       // T = 0
                     RF_RegSel = 4'b1111; 
@@ -115,6 +114,9 @@ module CPUSystem(
                     S = IROut[9]; // S'yi al.
                     case (OpCode)
                         6'b000000: begin // BRA PC <- PC + VALUE
+                            _ALUSystem.ARF.AR.Q=16'hx;
+                            _ALUSystem.ARF.SP.Q=16'hx;
+                            _ALUSystem.ALU.FlagsOut=4'bxxxx;                                
                             MuxASel = 2'b11;
                             //$display("Rsel: %h", Rsel);
                             case (Rsel)
@@ -146,6 +148,8 @@ module CPUSystem(
                             RF_FunSel = 3'b010; // Q = I    // S1 is loading.                            
                         end
                         6'b000001: begin // BNE IF Z=0 THEN PC <- PC + VALUE 
+                            _ALUSystem.ARF.AR.Q=16'hx;
+                            _ALUSystem.ARF.SP.Q=16'hx;                          
                             if(_ALUSystem.ALUOutFlag[3] == 0)begin
                                 MuxASel = 2'b11;
                                 case (Rsel)
@@ -180,6 +184,8 @@ module CPUSystem(
                             end
                         end
                         6'b000010: begin // BEQ IF Z=1 THEN PC <- PC + VALUE
+                            _ALUSystem.ARF.AR.Q=16'hx;
+                            _ALUSystem.ARF.SP.Q=16'hx;
                             if(_ALUSystem.ALUOutFlag[3] == 1)begin
                                 MuxASel = 2'b11;
                                 case (Rsel)
@@ -214,6 +220,8 @@ module CPUSystem(
                             end
                         end
                         6'b000011: begin // POP SP <- SP + 1, Rx <- M[SP]
+                            _ALUSystem.ARF.AR.Q=16'hx;
+                            _ALUSystem.ALU.FlagsOut=4'bxxxx;                            
                             ARF_RegSel = 3'b110; // SP registerý enable et
                             ARF_FunSel = 3'b001; // SP registerý 1 artýr
                             
@@ -238,6 +246,8 @@ module CPUSystem(
                             endcase
                         end
                         6'b000100: begin // PSH M[SP] <- Rx, SP <- SP - 1
+                            _ALUSystem.ARF.AR.Q=16'hx;
+                            _ALUSystem.ALU.FlagsOut=4'bxxxx;                            
                             Mem_WR = 1'b1; // Memory'nin write modunu aç
                             Mem_CS = 1'b0; // Memory'yi enable et
                             ARF_OutDSel = 2'b11; // SP registerý address'e gidiyor.
@@ -263,6 +273,7 @@ module CPUSystem(
                             endcase
                         end
                         6'b000101: begin // INC DstReg <- SReg1 + 1
+                      
                             ALU_FunSel = 5'b10000;                            
                             case(SReg1)
                                 3'b000: ARF_OutCSel = 2'b00;
@@ -301,7 +312,7 @@ module CPUSystem(
                                 RF_FunSel = 3'b010;
                             end   
                         end
-                        6'b000110: begin // DEC DstReg <- SReg1 - 1
+                        6'b000110: begin // DEC DstReg <- SReg1 - 1                       
                             ALU_FunSel = 5'b10000;
                             case(SReg1)
                                 3'b000: ARF_OutCSel = 2'b00;
@@ -340,7 +351,7 @@ module CPUSystem(
                                 RF_FunSel = 3'b010;
                             end  
                         end
-                        6'b000111: begin // LSL DstReg <- LSL SReg1  
+                        6'b000111: begin // LSL DstReg <- LSL SReg1                            
                             ALU_FunSel = 5'b10000;                           
                             case(SReg1)
                                 3'b000: ARF_OutCSel = 2'b00;
@@ -361,7 +372,7 @@ module CPUSystem(
                                 MuxASel = 2'b00;                                                       
                             end
                         end
-                        6'b001000: begin // LSR DstReg <- LSR SReg1
+                        6'b001000: begin // LSR DstReg <- LSR SReg1                    
                             ALU_FunSel = 5'b10000;                           
                             case(SReg1)
                                 3'b000: ARF_OutCSel = 2'b00;
@@ -383,6 +394,7 @@ module CPUSystem(
                             end
                         end
                         6'b001001: begin // ASR DstReg <- ASR SReg1
+                      
                             ALU_FunSel = 5'b10000;                           
                             case(SReg1)
                                 3'b000: ARF_OutCSel = 2'b00;
@@ -403,7 +415,7 @@ module CPUSystem(
                                 MuxASel = 2'b00;                                                       
                             end                        
                         end
-                        6'b001010: begin // CSL DstReg <- CSL SReg1
+                        6'b001010: begin // CSL DstReg <- CSL SReg1                        
                             ALU_FunSel = 5'b10000;                           
                             case(SReg1)
                                 3'b000: ARF_OutCSel = 2'b00;
@@ -424,7 +436,7 @@ module CPUSystem(
                                 MuxASel = 2'b00;                                                       
                             end                        
                         end
-                        6'b001011: begin // CSR DstReg <- CSR SReg1  
+                        6'b001011: begin // CSR DstReg <- CSR SReg1                         
                             ALU_FunSel = 5'b10000;                           
                             case(SReg1)
                                 3'b000: ARF_OutCSel = 2'b00;
@@ -445,7 +457,7 @@ module CPUSystem(
                                 MuxASel = 2'b00;                                                       
                             end                        
                         end
-                        6'b001100: begin // AND DstReg <- SReg1 AND SReg2
+                        6'b001100: begin // AND DstReg <- SReg1 AND SReg2;                        
                             case (SReg1)
                                 3'b000: ARF_OutCSel = 2'b00;
                                 3'b001: ARF_OutCSel = 2'b01;
@@ -463,7 +475,7 @@ module CPUSystem(
                                 RF_OutASel = 3'b100;
                             end                             
                         end
-                        6'b001101: begin // ORR DstReg <- SReg1 OR SReg2
+                        6'b001101: begin // ORR DstReg <- SReg1 OR SReg2                         
                             case (SReg1)
                                 3'b000: ARF_OutCSel = 2'b00;
                                 3'b001: ARF_OutCSel = 2'b01;
@@ -481,7 +493,7 @@ module CPUSystem(
                                 RF_OutASel = 3'b100;
                             end                             
                         end
-                        6'b001110: begin // NOT DstReg <- NOT SReg1
+                        6'b001110: begin // NOT DstReg <- NOT SReg1                         
                             ALU_FunSel = 5'b10000;                           
                             case(SReg1)
                                 3'b000: ARF_OutCSel = 2'b00;
@@ -502,7 +514,7 @@ module CPUSystem(
                                 MuxASel = 2'b00;                                                       
                             end                        
                         end
-                        6'b001111: begin // XOR DstReg <- SReg1 XOR SReg2
+                        6'b001111: begin // XOR DstReg <- SReg1 XOR SReg2                        
                             case (SReg1)
                                 3'b000: ARF_OutCSel = 2'b00;
                                 3'b001: ARF_OutCSel = 2'b01;
@@ -520,7 +532,7 @@ module CPUSystem(
                                 RF_OutASel = 3'b100;
                             end                             
                         end
-                        6'b010000: begin // NAND DstReg <- SReg1 NAND SReg2
+                        6'b010000: begin // NAND DstReg <- SReg1 NAND SReg2                         
                             case (SReg1)
                                 3'b000: ARF_OutCSel = 2'b00;
                                 3'b001: ARF_OutCSel = 2'b01;
@@ -1034,6 +1046,8 @@ module CPUSystem(
                 32: begin // EXECUTE T = 5
                         case (OpCode)
                             6'b001100: begin // AND DstReg <- SReg1 AND SReg2
+                                RF_ScrSel = 4'b1011;
+                                RF_FunSel = 3'b011;
                                 SCReset = 1;
                             end
                             6'b001101: begin // ORR DstReg <- SReg1 OR SReg2
